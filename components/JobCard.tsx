@@ -261,12 +261,14 @@ export function JobCard({
                 <Badge
                   key={doc.id}
                   variant="outline"
-                  className="text-xs"
+                  className="text-xs max-w-full"
                   title={doc.name}
                 >
-                  {doc.name.length > 20
-                    ? `${doc.name.substring(0, 20)}...`
-                    : doc.name}
+                  <span className="truncate block">
+                    {doc.name.length > 15
+                      ? `${doc.name.substring(0, 15)}...`
+                      : doc.name}
+                  </span>
                 </Badge>
               ))}
               {job.documents.length > 3 && (

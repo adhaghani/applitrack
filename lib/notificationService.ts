@@ -27,6 +27,7 @@ class NotificationService {
   private readonly SETTINGS_KEY = "applitrack-notification-settings";
   private notifications: SmartNotification[] = [];
   private settings: NotificationSettings;
+  private eventListeners: Set<(count: number) => void> = new Set();
 
   constructor() {
     this.settings = this.loadSettings();
@@ -79,6 +80,21 @@ class NotificationService {
   private saveNotifications(): void {
     if (typeof window === "undefined") return;
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.notifications));
+    this.notifyUnreadCountChange();
+  }
+
+  private notifyUnreadCountChange(): void {
+    const count = this.getUnreadCount();
+    this.eventListeners.forEach((listener) => listener(count));
+  }
+
+  // Event listener management
+  onUnreadCountChange(listener: (count: number) => void): () => void {
+    this.eventListeners.add(listener);
+    // Return cleanup function
+    return () => {
+      this.eventListeners.delete(listener);
+    };
   }
 
   private saveSettings(): void {

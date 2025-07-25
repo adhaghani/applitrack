@@ -81,6 +81,8 @@ export const jobStorage = {
   },
 
   add: (application: Omit<JobApplication, "id">): JobApplication => {
+    console.log("jobStorage.add called with:", application);
+
     const newApplication: JobApplication = {
       ...application,
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -97,9 +99,16 @@ export const jobStorage = {
       archived: false,
     };
 
+    console.log("Created new application:", newApplication);
+
     const applications = jobStorage.getAll();
     applications.push(newApplication);
     jobStorage.save(applications);
+
+    console.log(
+      "Saved applications to storage, total count:",
+      applications.length
+    );
 
     return newApplication;
   },

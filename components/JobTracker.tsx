@@ -61,6 +61,7 @@ export default function JobTracker() {
   const [selectedJobForDocuments, setSelectedJobForDocuments] = useState<
     string | undefined
   >(undefined);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
 
   // Delete confirmation dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -93,6 +94,19 @@ export default function JobTracker() {
     };
 
     initializeApp();
+  }, []);
+
+  // Track notification count changes - event-driven updates
+  useEffect(() => {
+    // Initial count
+    setUnreadNotificationCount(notificationService.getUnreadCount());
+
+    // Subscribe to real-time updates
+    const unsubscribe = notificationService.onUnreadCountChange((count) => {
+      setUnreadNotificationCount(count);
+    });
+
+    return unsubscribe;
   }, []);
 
   // Keyboard shortcuts
@@ -133,8 +147,26 @@ export default function JobTracker() {
   });
 
   const handleAddJob = (jobData: Omit<JobApplication, "id">) => {
+    console.log("handleAddJob called with:", jobData);
+
     const newJob = jobStorage.add(jobData);
-    setJobs((prev) => [...prev, newJob]);
+    console.log("Job added to storage:", newJob);
+
+    setJobs((prev) => {
+      const updatedJobs = [...prev, newJob];
+      console.log("Updated jobs state, total count:", updatedJobs.length);
+      return updatedJobs;
+    });
+
+    // Verify the job was actually saved
+    setTimeout(() => {
+      const savedJobs = jobStorage.getAll();
+      const foundJob = savedJobs.find((job) => job.id === newJob.id);
+      console.log("Verification - job found in storage:", !!foundJob);
+      if (!foundJob) {
+        console.error("ERROR: Job was not properly saved to localStorage!");
+      }
+    }, 100);
 
     // Schedule notifications if enabled
     notificationService.scheduleFollowUpReminder(newJob);
@@ -146,6 +178,9 @@ export default function JobTracker() {
     accessibilityService.announce(
       `Added new application for ${newJob.role} at ${newJob.company}`
     );
+
+    // Return the new job so other components can access the generated ID
+    return newJob;
   };
 
   const handleUpdateJob = (id: string, updates: Partial<JobApplication>) => {
@@ -362,34 +397,85 @@ export default function JobTracker() {
                   </p>
                 </div>
 
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setNotificationPanelOpen(true)}
-                    className="hidden sm:flex"
-                  >
-                    <Bell className="w-4 h-4 mr-2" />
-                    Notifications
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setKeyboardHelpOpen(true)}
-                    className="hidden sm:flex"
-                  >
-                    <Keyboard className="w-4 h-4 mr-2" />
-                    Shortcuts
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setDocumentManagerOpen(true)}
-                    className="hidden sm:flex"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Documents
-                  </Button>
+                <div className="flex items-center gap-2">
+                  {/* Desktop: Show individual buttons */}
+                  <div className="hidden sm:flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNotificationPanelOpen(true)}
+                      className="relative"
+                    >
+                      <Bell className="w-4 h-4 mr-2" />
+                      Notifications
+                      {unreadNotificationCount > 0 && (
+                        <Badge
+                          variant="destructive"
+                          className="absolute -top-2 -right-2 px-1 min-w-[1.25rem] h-5 text-xs"
+                        >
+                          {unreadNotificationCount}
+                        </Badge>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setKeyboardHelpOpen(true)}
+                    >
+                      <Keyboard className="w-4 h-4 mr-2" />
+                      Shortcuts
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDocumentManagerOpen(true)}
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      Documents
+                    </Button>
+                  </div>
+
+                  {/* Mobile: Show compact icon buttons */}
+                  <div className="flex sm:hidden gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNotificationPanelOpen(true)}
+                      className="px-2 relative"
+                      title="Notifications"
+                      aria-label="Open notifications"
+                    >
+                      <Bell className="w-4 h-4" />
+                      {unreadNotificationCount > 0 && (
+                        <Badge
+                          variant="destructive"
+                          className="absolute -top-2 -right-2 px-1 min-w-[1.25rem] h-5 text-xs"
+                        >
+                          {unreadNotificationCount}
+                        </Badge>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setKeyboardHelpOpen(true)}
+                      className="px-2"
+                      title="Keyboard Shortcuts"
+                      aria-label="Show keyboard shortcuts"
+                    >
+                      <Keyboard className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDocumentManagerOpen(true)}
+                      className="px-2"
+                      title="Document Manager"
+                      aria-label="Open document manager"
+                    >
+                      <Upload className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
 

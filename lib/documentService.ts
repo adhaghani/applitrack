@@ -236,11 +236,19 @@ class DocumentService {
   }
 
   attachDocumentToJob(documentId: string, jobId: string): boolean {
-    const doc = this.getDocument(documentId);
-    if (!doc) return false;
+    console.log(`Attempting to attach document ${documentId} to job ${jobId}`);
 
+    const doc = this.getDocument(documentId);
+    if (!doc) {
+      console.error(`Document ${documentId} not found`);
+      return false;
+    }
+
+    console.log(`Found document:`, doc);
     doc.jobId = jobId;
     this.saveDocuments();
+
+    console.log(`Document ${documentId} successfully attached to job ${jobId}`);
     return true;
   }
 

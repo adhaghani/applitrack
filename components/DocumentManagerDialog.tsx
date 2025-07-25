@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -34,9 +32,9 @@ export function DocumentManagerDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       {children && <DialogTrigger asChild>{children}</DialogTrigger>}
-      <DialogContent className="max-w-6xl max-h-[90vh]">
+      <DialogContent className="!max-w-3xl w-full max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
+          <DialogTitle className="flex items-center w-full space-x-2">
             <Upload className="h-5 w-5" />
             <span>Document Manager</span>
             {jobId && (

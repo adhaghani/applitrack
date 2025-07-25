@@ -120,26 +120,34 @@ export function EditJobDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] max-w-[95vw] w-full mx-4">
         <DialogHeader>
-          <DialogTitle>Edit Job Application</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">
+            Edit Job Application
+          </DialogTitle>
         </DialogHeader>
 
         <ScrollArea className="h-[calc(90vh-120px)]">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-6 pr-4"
+              className="space-y-4 sm:space-y-6 pr-2 sm:pr-4"
             >
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="company"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Company *</FormLabel>
+                      <FormLabel className="text-sm font-medium">
+                        Company *
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter company name" {...field} />
+                        <Input
+                          placeholder="Enter company name"
+                          className="h-11 text-base"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -151,9 +159,15 @@ export function EditJobDialog({
                   name="role"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Role *</FormLabel>
+                      <FormLabel className="text-sm font-medium">
+                        Role *
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter job role" {...field} />
+                        <Input
+                          placeholder="Enter job role"
+                          className="h-11 text-base"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -161,15 +175,21 @@ export function EditJobDialog({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="workLocation"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Work Location *</FormLabel>
+                      <FormLabel className="text-sm font-medium">
+                        Work Location *
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., New York, NY" {...field} />
+                        <Input
+                          placeholder="e.g., New York, NY"
+                          className="h-11 text-base"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -188,9 +208,6 @@ export function EditJobDialog({
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>
-                        Job category or department
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -430,15 +447,18 @@ export function EditJobDialog({
                 )}
               />
 
-              <div className="flex justify-end space-x-2">
+              <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => onOpenChange(false)}
+                  className="w-full sm:w-auto h-11"
                 >
                   Cancel
                 </Button>
-                <Button type="submit">Update Application</Button>
+                <Button type="submit" className="w-full sm:w-auto h-11">
+                  Update Application
+                </Button>
               </div>
             </form>
           </Form>

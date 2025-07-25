@@ -314,7 +314,7 @@ export function NotificationPanel({
                   className={`p-3 cursor-pointer transition-colors ${
                     notification.isRead
                       ? "bg-background hover:bg-muted/50"
-                      : "bg-blue-50 hover:bg-blue-100 border border-blue-200"
+                      : "bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-100 border border-blue-200"
                   }`}
                   onClick={() => handleMarkAsRead(notification.id)}
                 >

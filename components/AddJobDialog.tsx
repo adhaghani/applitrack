@@ -57,7 +57,7 @@ import {
 } from "lucide-react";
 
 interface AddJobDialogProps {
-  onAddJob: (job: Omit<JobApplication, "id">) => void;
+  onAddJob: (job: Omit<JobApplication, "id">) => JobApplication;
   children: React.ReactNode;
 }
 
@@ -98,6 +98,7 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
     setIsSubmitting(true);
 
     try {
+      // First create the job without linked documents
       const newJob = {
         ...data,
         appliedDate: new Date().toISOString().split("T")[0],
@@ -109,7 +110,7 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
         category: data.category || undefined,
         jobPostingUrl: data.jobPostingUrl || undefined,
         contacts: [],
-        documents: linkedDocuments,
+        documents: [],
         statusHistory: [
           {
             id: `status-${Date.now()}`,
@@ -120,16 +121,42 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
         ],
       };
 
-      onAddJob(newJob);
+      // Call onAddJob which will return the job with the generated ID
+      const createdJob = onAddJob(newJob);
+
+      console.log("Job created successfully:", createdJob);
+
+      // If there are linked documents, attach them to the job after it's created
+      if (linkedDocuments.length > 0) {
+        console.log(
+          "Attaching documents to job:",
+          linkedDocuments.length,
+          "documents"
+        );
+        try {
+          // Update each linked document with the new job ID
+          linkedDocuments.forEach((doc) => {
+            const success = documentService.attachDocumentToJob(
+              doc.id,
+              createdJob.id
+            );
+            console.log(`Document ${doc.id} attachment result:`, success);
+          });
+          console.log("Document attachment completed successfully");
+        } catch (error) {
+          console.error("Error during document attachment:", error);
+          // Don't let document attachment errors prevent job creation
+        }
+      }
 
       // Schedule notifications
-      const jobWithId = { ...newJob, id: `temp-${Date.now()}` };
-      notificationService.scheduleFollowUpReminder(jobWithId);
+      const jobForNotifications = createdJob;
+      notificationService.scheduleFollowUpReminder(jobForNotifications);
       if (newJob.interviewDate) {
-        notificationService.scheduleInterviewReminder(jobWithId);
+        notificationService.scheduleInterviewReminder(jobForNotifications);
       }
       if (newJob.followUpDate) {
-        notificationService.scheduleDeadlineReminder(jobWithId);
+        notificationService.scheduleDeadlineReminder(jobForNotifications);
       }
 
       // Announce to screen readers
@@ -237,26 +264,34 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] max-w-[95vw] w-full sm:mx-4">
         <DialogHeader>
-          <DialogTitle>Add New Job Application</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">
+            Add New Job Application
+          </DialogTitle>
         </DialogHeader>
 
         <ScrollArea className="h-[calc(90vh-120px)]">
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
-              className="space-y-6 pr-4"
+              className="space-y-4 sm:space-y-6 pr-2 sm:pr-4"
             >
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="company"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Company *</FormLabel>
+                      <FormLabel className="text-sm font-medium">
+                        Company *
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter company name" {...field} />
+                        <Input
+                          placeholder="Enter company name"
+                          className="h-11 text-base"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -268,9 +303,15 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
                   name="role"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Role *</FormLabel>
+                      <FormLabel className="text-sm font-medium">
+                        Role *
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter job role" {...field} />
+                        <Input
+                          placeholder="Enter job role"
+                          className="h-11 text-base"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -278,15 +319,21 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
                   name="workLocation"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Work Location *</FormLabel>
+                      <FormLabel className="text-sm font-medium">
+                        Work Location *
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., New York, NY" {...field} />
+                        <Input
+                          placeholder="e.g., New York, NY"
+                          className="h-11 text-base"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -298,35 +345,37 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
                   name="category"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category</FormLabel>
+                      <FormLabel className="text-sm font-medium">
+                        Category
+                      </FormLabel>
                       <FormControl>
                         <Input
                           placeholder="e.g., Software Engineering"
+                          className="h-11 text-base"
                           {...field}
                         />
                       </FormControl>
-                      <FormDescription>
-                        Job category or department
-                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
                   name="jobType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Job Type</FormLabel>
+                      <FormLabel className="text-sm font-medium">
+                        Job Type
+                      </FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full h-11">
                             <SelectValue placeholder="Select job type" />
                           </SelectTrigger>
                         </FormControl>
@@ -348,13 +397,15 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
                   name="workMode"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Work Mode</FormLabel>
+                      <FormLabel className="text-sm font-medium">
+                        Work Mode
+                      </FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full h-11">
                             <SelectValue placeholder="Select work mode" />
                           </SelectTrigger>
                         </FormControl>
@@ -374,13 +425,15 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
                   name="experienceLevel"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Experience Level</FormLabel>
+                      <FormLabel className="text-sm font-medium">
+                        Experience Level
+                      </FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full h-11">
                             <SelectValue placeholder="Select level" />
                           </SelectTrigger>
                         </FormControl>
@@ -560,7 +613,7 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
                         defaultValue={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select priority" />
                           </SelectTrigger>
                         </FormControl>
@@ -620,12 +673,22 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
                     {linkedDocuments.map((doc) => (
                       <div
                         key={doc.id}
-                        className="flex items-center justify-between bg-muted p-2 rounded-md"
+                        className="flex items-center justify-between bg-muted p-2 rounded-md min-w-0"
                       >
-                        <div className="flex items-center space-x-2">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm truncate">{doc.name}</span>
-                          <Badge variant="outline" className="text-xs">
+                        <div className="flex items-center space-x-2 min-w-0 flex-1">
+                          <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <span
+                              className="text-sm block truncate"
+                              title={doc.name}
+                            >
+                              {doc.name}
+                            </span>
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className="text-xs flex-shrink-0"
+                          >
                             {doc.type}
                           </Badge>
                         </div>
@@ -634,7 +697,7 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleUnlinkDocument(doc.id)}
-                          className="h-8 w-8 p-0"
+                          className="h-8 w-8 p-0 flex-shrink-0 ml-2"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -660,9 +723,11 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
                     <SelectContent>
                       {getAvailableDocuments().map((doc) => (
                         <SelectItem key={doc.id} value={doc.id}>
-                          <div className="flex items-center space-x-2">
-                            <FileText className="h-4 w-4" />
-                            <span>{doc.name}</span>
+                          <div className="flex items-center space-x-2 min-w-0 max-w-full">
+                            <FileText className="h-4 w-4 flex-shrink-0" />
+                            <span className="truncate" title={doc.name}>
+                              {doc.name}
+                            </span>
                           </div>
                         </SelectItem>
                       ))}
@@ -682,7 +747,7 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => setTemplateDialogOpen(true)}
-                  className="flex-1"
+                  className="flex-1 h-11"
                 >
                   <FileText className="w-4 h-4 mr-2" />
                   Templates
@@ -692,22 +757,27 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => setContactDialogOpen(true)}
-                  className="flex-1"
+                  className="flex-1 h-11"
                 >
                   <Users className="w-4 h-4 mr-2" />
                   Contacts
                 </Button>
               </div>
 
-              <div className="flex justify-end space-x-2">
+              <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2 pt-4">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setOpen(false)}
+                  className="w-full sm:w-auto h-11"
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full sm:w-auto h-11"
+                >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />

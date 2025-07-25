@@ -150,15 +150,15 @@ export function DocumentManager({
         </TabsList>
 
         <TabsContent value="documents" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="relative">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+              <div className="relative w-full sm:w-auto">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search documents..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-8 w-64"
+                  className="pl-8 w-full sm:w-64"
                 />
               </div>
 
@@ -166,7 +166,7 @@ export function DocumentManager({
                 value={selectedCategory}
                 onValueChange={setSelectedCategory}
               >
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue placeholder="Filter by type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -181,7 +181,7 @@ export function DocumentManager({
             </div>
 
             {selectedDocuments.length > 0 && (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 w-full sm:w-auto">
                 <span className="text-sm text-muted-foreground">
                   {selectedDocuments.length} selected
                 </span>
@@ -189,6 +189,7 @@ export function DocumentManager({
                   variant="destructive"
                   size="sm"
                   onClick={handleDeleteSelected}
+                  className="flex-1 sm:flex-none"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
                   Delete Selected
@@ -216,34 +217,42 @@ export function DocumentManager({
                     }`}
                     onClick={() => toggleDocumentSelection(document.id)}
                   >
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-start justify-between min-w-0">
                       <div className="flex items-start space-x-3 flex-1 min-w-0">
-                        <div className="mt-1">{getTypeIcon(document.type)}</div>
+                        <div className="mt-1 flex-shrink-0">
+                          {getTypeIcon(document.type)}
+                        </div>
 
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-2 mb-1">
-                            <h4 className="font-medium truncate">
+                          <div className="flex items-center space-x-2 mb-1 min-w-0">
+                            <h4
+                              className="font-medium truncate flex-1 min-w-0"
+                              title={document.name}
+                            >
                               {document.name}
                             </h4>
-                            <Badge variant="outline" className="text-xs">
+                            <Badge
+                              variant="outline"
+                              className="text-xs flex-shrink-0"
+                            >
                               {categories.find((c) => c.id === document.type)
                                 ?.name || document.type}
                             </Badge>
                           </div>
 
-                          <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                          <div className="flex items-center space-x-2 sm:space-x-4 text-xs text-muted-foreground flex-wrap gap-1">
                             {document.fileSize && (
-                              <span className="flex items-center space-x-1">
+                              <span className="flex items-center space-x-1 whitespace-nowrap">
                                 <HardDrive className="h-3 w-3" />
                                 <span>{formatFileSize(document.fileSize)}</span>
                               </span>
                             )}
-                            <span className="flex items-center space-x-1">
+                            <span className="flex items-center space-x-1 whitespace-nowrap">
                               <Calendar className="h-3 w-3" />
                               <span>{formatDate(document.uploadDate)}</span>
                             </span>
                             {document.mimeType && (
-                              <span>
+                              <span className="whitespace-nowrap">
                                 {document.mimeType.split("/")[1]?.toUpperCase()}
                               </span>
                             )}
@@ -251,7 +260,7 @@ export function DocumentManager({
                         </div>
                       </div>
 
-                      <div className="flex items-center space-x-1 ml-4">
+                      <div className="flex items-center space-x-1 ml-2 flex-shrink-0">
                         {onDocumentSelect && (
                           <Button
                             size="sm"
@@ -260,7 +269,7 @@ export function DocumentManager({
                               e.stopPropagation();
                               handleDocumentSelect(document);
                             }}
-                            className="h-8"
+                            className="h-8 text-xs px-2"
                           >
                             Select
                           </Button>
@@ -274,6 +283,7 @@ export function DocumentManager({
                             handleDownloadDocument(document.id);
                           }}
                           className="h-8 w-8 p-0"
+                          title="Download document"
                         >
                           <Download className="h-3 w-3" />
                         </Button>
@@ -286,6 +296,7 @@ export function DocumentManager({
                             handleDeleteDocument(document.id);
                           }}
                           className="h-8 w-8 p-0 text-destructive hover:text-destructive-foreground hover:bg-destructive"
+                          title="Delete document"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -418,13 +429,17 @@ export function DocumentManager({
                     {stats.recentUploads.map((doc) => (
                       <div
                         key={doc.id}
-                        className="flex items-center justify-between text-sm"
+                        className="flex items-center justify-between text-sm min-w-0"
                       >
-                        <div className="flex items-center space-x-2">
-                          {getTypeIcon(doc.type)}
-                          <span className="truncate">{doc.name}</span>
+                        <div className="flex items-center space-x-2 min-w-0 flex-1">
+                          <div className="flex-shrink-0">
+                            {getTypeIcon(doc.type)}
+                          </div>
+                          <span className="truncate" title={doc.name}>
+                            {doc.name}
+                          </span>
                         </div>
-                        <span className="text-muted-foreground">
+                        <span className="text-muted-foreground flex-shrink-0 ml-2 text-xs">
                           {formatDate(doc.uploadDate)}
                         </span>
                       </div>
