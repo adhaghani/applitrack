@@ -141,7 +141,7 @@ export function DocumentManager({
   const stats = documentService.getStorageStats();
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full">
       <Tabs defaultValue="documents" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="documents">Documents</TabsTrigger>
@@ -206,13 +206,13 @@ export function DocumentManager({
                 <p className="text-sm">Upload some documents to get started</p>
               </div>
             ) : (
-              <div className="grid gap-3 pr-4">
+              <div className="grid gap-3">
                 {filteredDocuments.map((document) => (
                   <Card
                     key={document.id}
                     className={`p-4 cursor-pointer transition-colors ${
                       selectedDocuments.includes(document.id)
-                        ? "bg-blue-50 border-blue-200"
+                        ? "bg-blue-900/10 border-blue-200"
                         : "hover:bg-muted/50"
                     }`}
                     onClick={() => toggleDocumentSelection(document.id)}
@@ -226,7 +226,7 @@ export function DocumentManager({
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center space-x-2 mb-1 min-w-0">
                             <h4
-                              className="font-medium truncate flex-1 min-w-0"
+                              className="font-medium w-24 truncate min-w-0"
                               title={document.name}
                             >
                               {document.name}
@@ -311,7 +311,7 @@ export function DocumentManager({
 
         <TabsContent value="upload" className="space-y-4">
           <ScrollArea className="h-[400px]">
-            <div className="grid gap-4 pr-4">
+            <div className="grid gap-4">
               {categories.map((category) => (
                 <Card key={category.id} className="p-4">
                   <div className="flex items-start justify-between mb-3">
@@ -369,7 +369,7 @@ export function DocumentManager({
 
         <TabsContent value="stats" className="space-y-4">
           <ScrollArea className="h-[400px]">
-            <div className="space-y-4 pr-4">
+            <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card className="p-4">
                   <div className="flex items-center space-x-2 mb-2">
@@ -435,6 +435,7 @@ export function DocumentManager({
                           <div className="flex-shrink-0">
                             {getTypeIcon(doc.type)}
                           </div>
+
                           <span className="truncate" title={doc.name}>
                             {doc.name}
                           </span>
