@@ -43,7 +43,6 @@ import { TemplateManager } from "@/components/TemplateManager";
 import { ContactManager } from "@/components/ContactManager";
 import { notificationService } from "@/lib/notificationService";
 import { accessibilityService } from "@/lib/accessibilityService";
-import { useKeyboardShortcut } from "@/lib/keyboardService";
 import { documentService } from "@/lib/documentService";
 import {
   FileText,
@@ -249,17 +248,6 @@ export function AddJobDialog({ onAddJob, children }: AddJobDialogProps) {
       .getDocuments()
       .filter((doc) => !linkedDocuments.find((linked) => linked.id === doc.id));
   };
-
-  // Keyboard shortcuts
-  useKeyboardShortcut("t", () => setTemplateDialogOpen(true), {
-    ctrlKey: true,
-    description: "Open template manager",
-  });
-
-  useKeyboardShortcut("c", () => setContactDialogOpen(true), {
-    ctrlKey: true,
-    description: "Open contact manager",
-  });
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

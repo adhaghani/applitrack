@@ -13,7 +13,6 @@ import {
   Users,
   FileText,
   Upload,
-  Keyboard,
   Lightbulb,
   ArrowRight,
   Play,
@@ -68,14 +67,6 @@ const features = [
       "Organize resumes, cover letters, and portfolios with version control",
     color: "text-teal-500",
     bgColor: "bg-teal-50",
-  },
-  {
-    icon: Keyboard,
-    title: "Keyboard Shortcuts",
-    description:
-      "Navigate efficiently with comprehensive keyboard shortcuts and accessibility",
-    color: "text-indigo-500",
-    bgColor: "bg-indigo-50",
   },
 ];
 

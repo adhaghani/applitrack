@@ -1,7 +1,6 @@
 export interface AccessibilityOptions {
   focusManagement: boolean;
   announcements: boolean;
-  keyboardNavigation: boolean;
   highContrast: boolean;
   reducedMotion: boolean;
   screenReaderOptimized: boolean;
@@ -43,7 +42,6 @@ class AccessibilityService {
     return {
       focusManagement: true,
       announcements: true,
-      keyboardNavigation: true,
       highContrast: false,
       reducedMotion: false,
       screenReaderOptimized: true,
@@ -63,9 +61,6 @@ class AccessibilityService {
 
     // Listen for system preference changes
     this.setupMediaQueries();
-
-    // Setup global keyboard handlers
-    this.setupKeyboardHandlers();
   }
 
   private applySettings(): void {
@@ -105,46 +100,6 @@ class AccessibilityService {
     prefersHighContrast.addEventListener("change", updateFromSystem);
 
     updateFromSystem();
-  }
-
-  private setupKeyboardHandlers(): void {
-    if (!this.options.keyboardNavigation) return;
-
-    document.addEventListener("keydown", this.handleGlobalKeyDown.bind(this));
-  }
-
-  private handleGlobalKeyDown(event: KeyboardEvent): void {
-    // Skip navigation - press Tab to move to main content
-    if (event.key === "Tab" && !event.shiftKey && !event.ctrlKey) {
-      const skipLink = document.querySelector(
-        "[data-skip-link]"
-      ) as HTMLElement;
-      if (skipLink && document.activeElement === document.body) {
-        event.preventDefault();
-        skipLink.focus();
-      }
-    }
-
-    // Escape key - close modals, menus, etc.
-    if (event.key === "Escape") {
-      this.handleEscapeKey();
-    }
-  }
-
-  private handleEscapeKey(): void {
-    // Close active focus trap (modals, dropdowns)
-    if (this.activeFocusTrap) {
-      this.activeFocusTrap.deactivate();
-    }
-
-    // Close any open popover/dropdown
-    const openPopovers = document.querySelectorAll('[data-state="open"]');
-    openPopovers.forEach((popover) => {
-      const closeButton = popover.querySelector("[data-close]") as HTMLElement;
-      if (closeButton) {
-        closeButton.click();
-      }
-    });
   }
 
   // Update accessibility options
@@ -314,60 +269,6 @@ class AccessibilityService {
     element.setAttribute("aria-selected", selected.toString());
   }
 
-  // Keyboard navigation helpers
-  handleArrowNavigation(
-    event: KeyboardEvent,
-    items: HTMLElement[],
-    currentIndex: number,
-    options: {
-      wrap?: boolean;
-      horizontal?: boolean;
-      onSelect?: (index: number) => void;
-    } = {}
-  ): number {
-    const { wrap = true, horizontal = false, onSelect } = options;
-    let newIndex = currentIndex;
-
-    const isUpKey =
-      event.key === "ArrowUp" || (!horizontal && event.key === "ArrowLeft");
-    const isDownKey =
-      event.key === "ArrowDown" || (!horizontal && event.key === "ArrowRight");
-    const isLeftKey = horizontal && event.key === "ArrowLeft";
-    const isRightKey = horizontal && event.key === "ArrowRight";
-
-    if (isUpKey || isLeftKey) {
-      newIndex =
-        currentIndex > 0 ? currentIndex - 1 : wrap ? items.length - 1 : 0;
-    } else if (isDownKey || isRightKey) {
-      newIndex =
-        currentIndex < items.length - 1
-          ? currentIndex + 1
-          : wrap
-          ? 0
-          : items.length - 1;
-    } else if (event.key === "Home") {
-      newIndex = 0;
-    } else if (event.key === "End") {
-      newIndex = items.length - 1;
-    } else if (event.key === "Enter" || event.key === " ") {
-      if (onSelect) {
-        event.preventDefault();
-        onSelect(currentIndex);
-      }
-      return currentIndex;
-    }
-
-    if (newIndex !== currentIndex) {
-      event.preventDefault();
-      items[newIndex]?.focus();
-      if (onSelect) {
-        onSelect(newIndex);
-      }
-    }
-
-    return newIndex;
-  }
-
   // Color contrast utilities
   getContrastRatio(color1: string, color2: string): number {
     const getLuminance = (color: string): number => {
@@ -399,12 +300,6 @@ class AccessibilityService {
     }
 
     this.focusHistory = [];
-
-    // Remove event listeners
-    document.removeEventListener(
-      "keydown",
-      this.handleGlobalKeyDown.bind(this)
-    );
   }
 }
 

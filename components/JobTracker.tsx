@@ -8,7 +8,6 @@ import { notificationService } from "@/lib/notificationService";
 import { statusAutomationService } from "@/lib/statusAutomationService";
 import { performanceService } from "@/lib/performanceService";
 import { accessibilityService } from "@/lib/accessibilityService";
-import { useKeyboardShortcut, keyboardService } from "@/lib/keyboardService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +19,6 @@ import { JobCard } from "@/components/JobCard";
 import { EnhancedFilters } from "@/components/EnhancedFilters";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { NotificationPanel } from "@/components/NotificationPanel";
-import { KeyboardShortcutsHelp } from "@/components/KeyboardShortcutsHelp";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { searchJobs, filterJobs } from "@/lib/searchUtils";
@@ -41,7 +39,6 @@ import {
   Upload,
   Archive,
   Bell,
-  Keyboard,
   Lightbulb,
 } from "lucide-react";
 
@@ -56,7 +53,6 @@ export default function JobTracker() {
   });
   const [loading, setLoading] = useState(true);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
-  const [keyboardHelpOpen, setKeyboardHelpOpen] = useState(false);
   const [documentManagerOpen, setDocumentManagerOpen] = useState(false);
   const [selectedJobForDocuments, setSelectedJobForDocuments] = useState<
     string | undefined
@@ -108,43 +104,6 @@ export default function JobTracker() {
 
     return unsubscribe;
   }, []);
-
-  // Keyboard shortcuts
-  useKeyboardShortcut(
-    "n",
-    () => {
-      const addButton = document.querySelector(
-        '[aria-label="Add new job application"]'
-      ) as HTMLElement;
-      addButton?.click();
-    },
-    { ctrlKey: true, description: "Add new job application" }
-  );
-
-  useKeyboardShortcut(
-    "f",
-    () => {
-      const searchInput = document.querySelector(
-        'input[placeholder*="Search"]'
-      ) as HTMLElement;
-      searchInput?.focus();
-    },
-    { ctrlKey: true, description: "Focus search" }
-  );
-
-  useKeyboardShortcut("?", () => setKeyboardHelpOpen(true), {
-    description: "Show keyboard shortcuts",
-  });
-
-  useKeyboardShortcut("b", () => setNotificationPanelOpen((prev) => !prev), {
-    ctrlKey: true,
-    description: "Toggle notifications",
-  });
-
-  useKeyboardShortcut("d", () => setDocumentManagerOpen((prev) => !prev), {
-    ctrlKey: true,
-    description: "Open document manager",
-  });
 
   const handleAddJob = (jobData: Omit<JobApplication, "id">) => {
     console.log("handleAddJob called with:", jobData);
@@ -374,7 +333,7 @@ export default function JobTracker() {
   return (
     <ErrorBoundary>
       {loading ? (
-        <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="min-h-screen h-fit bg-background flex items-center justify-center">
           <div className="text-center">
             <LoadingSpinner size="lg" className="mx-auto mb-4" />
             <h2 className="text-lg font-semibold mb-2">Loading Job Tracker</h2>
@@ -420,14 +379,6 @@ export default function JobTracker() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setKeyboardHelpOpen(true)}
-                    >
-                      <Keyboard className="w-4 h-4 mr-2" />
-                      Shortcuts
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
                       onClick={() => setDocumentManagerOpen(true)}
                     >
                       <Upload className="w-4 h-4 mr-2" />
@@ -454,16 +405,6 @@ export default function JobTracker() {
                           {unreadNotificationCount}
                         </Badge>
                       )}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setKeyboardHelpOpen(true)}
-                      className="px-2"
-                      title="Keyboard Shortcuts"
-                      aria-label="Show keyboard shortcuts"
-                    >
-                      <Keyboard className="w-4 h-4" />
                     </Button>
                     <Button
                       variant="outline"
@@ -733,18 +674,6 @@ export default function JobTracker() {
               jobs={jobs}
               open={notificationPanelOpen}
               onOpenChange={setNotificationPanelOpen}
-            />
-
-            {/* Keyboard Shortcuts Help */}
-            <KeyboardShortcutsHelp
-              shortcuts={[
-                {
-                  name: "Application Management",
-                  shortcuts: keyboardService.getAllShortcuts(),
-                },
-              ]}
-              open={keyboardHelpOpen}
-              onOpenChange={setKeyboardHelpOpen}
             />
 
             {/* Document Manager Dialog */}

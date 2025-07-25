@@ -15,11 +15,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+
 import {
   Dialog,
   DialogContent,
@@ -183,24 +179,6 @@ export function NotificationPanel({
                   <DialogTitle>Notification Settings</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4">
-                  {!hasPermission && (
-                    <Card className="p-4 bg-yellow-50 border-yellow-200">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium">
-                            Enable Browser Notifications
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Get notified even when the app is closed
-                          </p>
-                        </div>
-                        <Button size="sm" onClick={handleRequestPermission}>
-                          Enable
-                        </Button>
-                      </div>
-                    </Card>
-                  )}
-
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <Label htmlFor="notifications-enabled">
